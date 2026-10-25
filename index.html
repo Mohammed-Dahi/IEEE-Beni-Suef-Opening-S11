@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="IEEE Beni Suef Student Branch registration" />
+    <title>IEEE Beni Suef | التسجيل</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="page-shell">
+      <section class="brand-panel" aria-label="IEEE Beni Suef Student Branch">
+        <div class="grid-orbit orbit-one"></div><div class="grid-orbit orbit-two"></div>
+        <div class="brand-content">
+          <div class="ieee-mark" aria-hidden="true">IEEE</div>
+          <p class="eyebrow">Beni Suef Student Branch</p>
+          <h1>كن جزءًا من<br /><strong>المجتمع التقني</strong></h1>
+          <p class="intro">سجّل بياناتك وانضم إلى فرق IEEE Beni Suef Student Branch.</p>
+          <div class="stat"><span id="registrationCount">0</span><small>مسجل حتى الآن على هذا الجهاز</small></div>
+        </div>
+      </section>
+
+      <section class="form-panel">
+        <div class="form-wrap">
+          <header>
+            <span class="section-tag">S11 • OPENING</span>
+            <h2>نموذج التسجيل</h2>
+            <p>املأ بياناتك التالية، وسنتواصل معك قريبًا.</p>
+          </header>
+
+          <form id="registrationForm" novalidate>
+            <div class="field">
+              <label for="fullName">الاسم بالكامل <span aria-hidden="true">*</span></label>
+              <input id="fullName" name="fullName" type="text" autocomplete="name" placeholder="اكتب اسمك بالكامل" required />
+              <small class="error-message" id="fullNameError"></small>
+            </div>
+            <div class="field">
+              <label for="phone">رقم الهاتف <em>اختياري</em></label>
+              <input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="مثال: 010 1234 5678" />
+            </div>
+            <div class="field">
+              <label for="position">المنصب <span aria-hidden="true">*</span></label>
+              <select id="position" name="position" required>
+                <option value="" selected disabled>اختر المنصب</option>
+                <option value="Member">Member</option>
+                <option value="Board">Board</option>
+                <option value="High Board">High Board</option>
+              </select>
+              <small class="error-message" id="positionError"></small>
+            </div>
+            <div class="field conditional-field" id="committeeField" hidden>
+              <label for="committee">اللجنة <span aria-hidden="true">*</span></label>
+              <select id="committee" name="committee">
+                <option value="" selected disabled>اختر اللجنة</option>
+              </select>
+              <small class="error-message" id="committeeError"></small>
+            </div>
+            <div class="field conditional-field" id="branchField" hidden>
+              <label for="branch">فرع الـ High Board <span aria-hidden="true">*</span></label>
+              <select id="branch" name="branch">
+                <option value="" selected disabled>اختر الفرع</option>
+              </select>
+              <small class="error-message" id="branchError"></small>
+            </div>
+            <button type="submit" class="primary-button">إتمام التسجيل <span aria-hidden="true">←</span></button>
+          </form>
+
+          <div class="export-card">
+            <div><strong>سجل التسجيلات</strong><p>نزّل كل البيانات في ملف CSV متوافق مع Excel.</p></div>
+            <button id="exportButton" type="button" class="secondary-button">تحميل CSV / Excel</button>
+          </div>
+        </div>
+      </section>
+    </main>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="app.js"></script>
+  </body>
+</html>
