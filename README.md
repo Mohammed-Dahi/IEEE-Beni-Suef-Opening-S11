@@ -1,23 +1,62 @@
-# IEEE Beni Suef Registration System
+# IEEE Beni Suef Registration System — Supabase Edition
 
-A responsive Arabic (RTL) registration form that runs entirely in the browser. Records are stored in the browser's `localStorage`; no server, account, or installation is required.
+This responsive Arabic/RTL single-page app writes registrations to a shared Supabase table and exports centrally stored records to an Excel-compatible CSV file. It has no build step or server dependency.
 
-## Run locally
+## 1. Create the database table
 
-1. Open `index.html` in a modern browser, or serve this folder with a simple static server.
-2. Complete the required fields. Choosing **Member** or **Board** requires a committee; choosing **High Board** requires a branch.
-3. Submit the form and use **تحميل CSV / Excel** to download the locally stored registrations.
+1. Create a [Supabase project](https://supabase.com/dashboard), then open **SQL Editor** → **New query**.
+2. Run the following SQL exactly once:
 
-For a local development server (optional, with Python installed):
+```sql
+create table public.registrations (
+  id uuid primary key default gen_random_uuid(),
+  full_name text not null,
+  contact_info text not null,
+  position text not null check (position in ('Member', 'Board', 'High Board')),
+  assignment text not null,
+  created_at timestamptz not null default now()
+);
+
+alter table public.registrations enable row level security;
+
+-- Allows visitors using the public key to register.
+create policy "public can submit registrations"
+on public.registrations for insert to anon
+with check (true);
+
+-- Required only for the in-page CSV button. See the security note below.
+create policy "admin page can read registrations"
+on public.registrations for select to anon
+using (true);
+```
+
+The public key belongs in browser applications; never expose a `service_role` or secret key. Enable RLS on exposed tables and create policies/grants that match permitted operations. [Supabase RLS documentation](https://supabase.com/docs/guides/database/postgres/row-level-security)
+
+## 2. Add your Supabase credentials
+
+1. In Supabase go to **Project Settings** → **API**.
+2. Copy the **Project URL** and the public **anon** key (or publishable key).
+3. In [app.js](app.js), replace these placeholders:
+
+```js
+const SUPABASE_URL = "PASTE_YOUR_SUPABASE_URL_HERE";
+const SUPABASE_ANON_KEY = "PASTE_YOUR_SUPABASE_ANON_OR_PUBLISHABLE_KEY_HERE";
+```
+
+The app loads the official v2 client from `https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2`, a documented CDN option. [Supabase JavaScript installation](https://supabase.com/docs/reference/javascript/installing)
+
+## 3. Run and test
+
+Open `index.html` directly in a modern browser, or serve the folder locally:
 
 ```bash
 python3 -m http.server 8000
 ```
 
-Then open `http://localhost:8000`.
+Open `http://localhost:8000`, submit a record, then choose **عرض التسجيلات / تحميل CSV**. Verify the data in Supabase under **Table Editor** → `registrations`.
 
-## Notes
+## Security note for the export button
 
-- The CSV includes a UTF-8 BOM so Arabic text opens correctly in Microsoft Excel.
-- Data remains in the same browser profile until its site storage is cleared.
-- The provided requirements list 21 committee values (including `Other`) and 4 branch values; all explicitly listed values are implemented.
+The requested direct browser-side export requires a `select` policy for the public browser key. That makes applicants' names/contact details readable to anyone who can load the deployed page. For a public production registration page, do **not** create the `select` policy: keep only the insert policy and export from the Supabase dashboard, or protect a separate admin page with Supabase Auth and an authenticated-only `select` policy.
+
+The brief names four High Board branches despite saying five; every explicitly listed branch (`WIE`, `SIGHT`, `CS`, `AESS`) is included.

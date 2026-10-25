@@ -19,7 +19,6 @@
           <p class="eyebrow">Beni Suef Student Branch</p>
           <h1>كن جزءًا من<br /><strong>المجتمع التقني</strong></h1>
           <p class="intro">سجّل بياناتك وانضم إلى فرق IEEE Beni Suef Student Branch.</p>
-          <div class="stat"><span id="registrationCount">0</span><small>مسجل حتى الآن على هذا الجهاز</small></div>
         </div>
       </section>
 
@@ -38,8 +37,9 @@
               <small class="error-message" id="fullNameError"></small>
             </div>
             <div class="field">
-              <label for="phone">رقم الهاتف <em>اختياري</em></label>
-              <input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="مثال: 010 1234 5678" />
+              <label for="contactInfo">البريد الإلكتروني أو رقم الهاتف <span aria-hidden="true">*</span></label>
+              <input id="contactInfo" name="contactInfo" type="text" autocomplete="email" placeholder="مثال: name@email.com أو 010 1234 5678" required />
+              <small class="error-message" id="contactInfoError"></small>
             </div>
             <div class="field">
               <label for="position">المنصب <span aria-hidden="true">*</span></label>
@@ -65,17 +65,19 @@
               </select>
               <small class="error-message" id="branchError"></small>
             </div>
-            <button type="submit" class="primary-button">إتمام التسجيل <span aria-hidden="true">←</span></button>
+            <button id="submitButton" type="submit" class="primary-button">إتمام التسجيل <span aria-hidden="true">←</span></button>
           </form>
 
           <div class="export-card">
-            <div><strong>سجل التسجيلات</strong><p>نزّل كل البيانات في ملف CSV متوافق مع Excel.</p></div>
-            <button id="exportButton" type="button" class="secondary-button">تحميل CSV / Excel</button>
+            <div><strong>إدارة التسجيلات</strong><p>اجلب البيانات المخزنة في Supabase ونزّلها بصيغة Excel.</p></div>
+            <button id="exportButton" type="button" class="secondary-button">عرض التسجيلات / تحميل CSV</button>
           </div>
         </div>
       </section>
     </main>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <!-- Supabase JS client (do not replace with the service_role key). -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="app.js"></script>
   </body>
 </html>

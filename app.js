@@ -1,56 +1,73 @@
-/* IEEE Beni Suef registration — browser-local persistence and UTF-8 CSV export. */
-const STORAGE_KEY = "ieee-beni-suef-registrations";
-const committees = ["Event Management","AI","Back-End","Data Analysis","Embedded Systems","Flutter","Front-End","Machine Learning","Cyber Security","Networks","Red Team","UI/UX","Presentation","HR","Visuals","Media","Research","Aerospace","Public Relations","Marketing","Other"];
-const branches = ["WIE","SIGHT","CS","AESS"];
+/* Paste the Project URL and public anon/publishable key. Never expose service_role. */
+const SUPABASE_URL = "https://zwqzijcpfvvyyecjyuuh.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp3cXppamNwZnZ2eXllY2p5dXVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI5NTE1NjUsImV4cCI6MjEwODUyNzU2NX0.nduBuJ_304_KMDugAod5ZKGs7QBk8xIeULMY2iScd20";
+
+const committees = ["Event Management", "AI", "Back-End", "Data Analysis", "Embedded Systems", "Flutter", "Front-End", "Machine Learning", "Cyber Security", "Networks", "Red Team", "UI/UX", "Presentation", "HR", "Visuals", "Media", "Research", "Aerospace", "PR", "Marketing"];
+const branches = ["WIE", "SIGHT", "CS", "AESS"];
 const form = document.querySelector("#registrationForm");
 const position = document.querySelector("#position");
 const committee = document.querySelector("#committee");
 const branch = document.querySelector("#branch");
 const committeeField = document.querySelector("#committeeField");
 const branchField = document.querySelector("#branchField");
+const submitButton = document.querySelector("#submitButton");
+const exportButton = document.querySelector("#exportButton");
 const toast = document.querySelector("#toast");
+const configured = !SUPABASE_URL.startsWith("PASTE_") && !SUPABASE_ANON_KEY.startsWith("PASTE_");
+const db = configured ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
 function fillSelect(select, values) { values.forEach(value => select.add(new Option(value, value))); }
-fillSelect(committee, committees); fillSelect(branch, branches);
-
-function records() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; } }
-function updateCount() { document.querySelector("#registrationCount").textContent = records().length.toLocaleString("ar-EG"); }
-function showToast(message, isError = false) { toast.textContent = message; toast.classList.toggle("error", isError); toast.classList.add("show"); clearTimeout(showToast.timer); showToast.timer = setTimeout(() => toast.classList.remove("show"), 3800); }
-function setError(id, message) { const input = document.querySelector(`#${id}`); input.classList.toggle("invalid", Boolean(message)); document.querySelector(`#${id}Error`).textContent = message; }
-function clearErrors() { document.querySelectorAll(".error-message").forEach(e => e.textContent = ""); document.querySelectorAll(".invalid").forEach(e => e.classList.remove("invalid")); }
-
+fillSelect(committee, committees);
+fillSelect(branch, branches);
+function showToast(message, isError = false) {
+  toast.textContent = message; toast.classList.toggle("error", isError); toast.classList.add("show");
+  clearTimeout(showToast.timer); showToast.timer = setTimeout(() => toast.classList.remove("show"), 4200);
+}
+function setError(id, message) { document.querySelector(`#${id}`).classList.toggle("invalid", Boolean(message)); document.querySelector(`#${id}Error`).textContent = message; }
+function clearErrors() { document.querySelectorAll(".error-message").forEach(element => element.textContent = ""); document.querySelectorAll(".invalid").forEach(element => element.classList.remove("invalid")); }
+function setBusy(button, busy, label) { button.disabled = busy; button.textContent = busy ? label : button.dataset.label; }
 function updateConditionalFields() {
-  const isCommittee = ["Member", "Board"].includes(position.value);
-  const isHighBoard = position.value === "High Board";
-  committeeField.hidden = !isCommittee; branchField.hidden = !isHighBoard;
-  committee.required = isCommittee; branch.required = isHighBoard;
-  if (!isCommittee) committee.value = ""; if (!isHighBoard) branch.value = "";
+  const useCommittee = ["Member", "Board"].includes(position.value);
+  const useBranch = position.value === "High Board";
+  committeeField.hidden = !useCommittee; branchField.hidden = !useBranch;
+  committee.required = useCommittee; branch.required = useBranch;
+  if (!useCommittee) committee.value = ""; if (!useBranch) branch.value = "";
   clearErrors();
 }
+[submitButton, exportButton].forEach(button => button.dataset.label = button.textContent.trim());
 position.addEventListener("change", updateConditionalFields);
 
-form.addEventListener("submit", event => {
+form.addEventListener("submit", async event => {
   event.preventDefault(); clearErrors();
+  if (!configured) return showToast("أضف رابط Supabase والمفتاح العام في ملف app.js أولاً.", true);
   let valid = true;
   if (!form.fullName.value.trim()) { setError("fullName", "من فضلك أدخل الاسم بالكامل."); valid = false; }
+  if (!form.contactInfo.value.trim()) { setError("contactInfo", "من فضلك أدخل البريد الإلكتروني أو رقم الهاتف."); valid = false; }
   if (!position.value) { setError("position", "من فضلك اختر المنصب."); valid = false; }
   if (["Member", "Board"].includes(position.value) && !committee.value) { setError("committee", "من فضلك اختر اللجنة."); valid = false; }
   if (position.value === "High Board" && !branch.value) { setError("branch", "من فضلك اختر الفرع."); valid = false; }
   if (!valid) return;
-  const entry = { fullName: form.fullName.value.trim(), contactInfo: form.phone.value.trim(), position: position.value, selectedCommitteeOrBranch: committee.value || branch.value, timestamp: new Date().toISOString() };
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...records(), entry])); updateCount(); form.reset(); updateConditionalFields(); showToast("تم تسجيل بياناتك بنجاح. أهلاً بك في IEEE!"); }
-  catch { showToast("تعذر حفظ البيانات محليًا. تحقق من إعدادات المتصفح.", true); }
+  setBusy(submitButton, true, "جارٍ الحفظ...");
+  const { error } = await db.from("registrations").insert([{
+    full_name: form.fullName.value.trim(), contact_info: form.contactInfo.value.trim(),
+    position: position.value, assignment: committee.value || branch.value
+  }]);
+  setBusy(submitButton, false);
+  if (error) return showToast(`تعذر حفظ التسجيل: ${error.message}`, true);
+  form.reset(); updateConditionalFields(); showToast("تم تسجيل بياناتك بنجاح في قاعدة البيانات. أهلاً بك في IEEE!");
 });
-
 function csvCell(value) { return `"${String(value ?? "").replaceAll('"', '""')}"`; }
-document.querySelector("#exportButton").addEventListener("click", () => {
-  const data = records();
+exportButton.addEventListener("click", async () => {
+  if (!configured) return showToast("أضف إعدادات Supabase في ملف app.js أولاً.", true);
+  setBusy(exportButton, true, "جارٍ جلب البيانات...");
+  const { data, error } = await db.from("registrations").select("id, full_name, contact_info, position, assignment, created_at").order("created_at", { ascending: false });
+  setBusy(exportButton, false);
+  if (error) return showToast(`تعذر جلب التسجيلات: ${error.message}`, true);
   if (!data.length) return showToast("لا توجد تسجيلات لتصديرها بعد.", true);
-  const header = ["Full Name", "Contact Info", "Position", "Selected Committee/Branch", "Timestamp"];
-  const rows = data.map(row => [row.fullName, row.contactInfo, row.position, row.selectedCommitteeOrBranch, new Date(row.timestamp).toLocaleString("en-CA")]);
+  const header = ["ID", "Full Name", "Contact Info", "Position", "Assignment", "Created At"];
+  const rows = data.map(row => [row.id, row.full_name, row.contact_info, row.position, row.assignment, new Date(row.created_at).toLocaleString("en-CA")]);
   const csv = "\uFEFF" + [header, ...rows].map(row => row.map(csvCell).join(",")).join("\r\n");
-  const url = URL.createObjectURL(new Blob([csv], { type:"text/csv;charset=utf-8;" }));
-  const link = Object.assign(document.createElement("a"), { href:url, download:`ieee-beni-suef-registrations-${new Date().toISOString().slice(0,10)}.csv` });
-  link.click(); URL.revokeObjectURL(url); showToast("تم تجهيز ملف CSV للتحميل.");
+  const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
+  const link = Object.assign(document.createElement("a"), { href: url, download: `ieee-beni-suef-registrations-${new Date().toISOString().slice(0, 10)}.csv` });
+  link.click(); URL.revokeObjectURL(url); showToast(`تم تصدير ${data.length} تسجيل بنجاح.`);
 });
-updateCount();
