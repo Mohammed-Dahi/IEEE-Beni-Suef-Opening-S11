@@ -12,8 +12,8 @@ create table public.registrations (
   id uuid primary key default gen_random_uuid(),
   full_name text not null,
   contact_info text not null,
-  position text not null check (position in ('Member', 'Board', 'High Board')),
-  assignment text not null,
+  position text not null check (position in ('EX-High Board', 'EX-Board', 'High Board', 'Board', 'Member', 'Non-Member')),
+  assignment text,
   created_at timestamptz not null default now()
 );
 
@@ -31,6 +31,20 @@ using (true);
 ```
 
 The public key belongs in browser applications; never expose a `service_role` or secret key. Enable RLS on exposed tables and create policies/grants that match permitted operations. [Supabase RLS documentation](https://supabase.com/docs/guides/database/postgres/row-level-security)
+
+### Update an existing table
+
+If you created the table from the previous version of this project, run this migration in Supabase's SQL Editor once. It expands the allowed positions and lets `Non-Member` records store a genuine SQL `NULL` assignment.
+
+```sql
+alter table public.registrations
+  drop constraint if exists registrations_position_check;
+
+alter table public.registrations
+  alter column assignment drop not null,
+  add constraint registrations_position_check
+    check (position in ('EX-High Board', 'EX-Board', 'High Board', 'Board', 'Member', 'Non-Member'));
+```
 
 ## 2. Add your Supabase credentials
 
@@ -59,4 +73,9 @@ Open `http://localhost:8000`, submit a record, then choose **عرض التسجي
 
 The requested direct browser-side export requires a `select` policy for the public browser key. That makes applicants' names/contact details readable to anyone who can load the deployed page. For a public production registration page, do **not** create the `select` policy: keep only the insert policy and export from the Supabase dashboard, or protect a separate admin page with Supabase Auth and an authenticated-only `select` policy.
 
-The brief names four High Board branches despite saying five; every explicitly listed branch (`WIE`, `SIGHT`, `CS`, `AESS`) is included.
+## Registration hierarchy
+
+- **EX-High Board:** `Season 10`, `Season 9`, or `Season 8`
+- **EX-Board**, **Board**, or **Member:** one of the 20 standard committees
+- **High Board:** `WIE`, `SIGHT`, `CSC`, `AESS`, or `Branch`
+- **Non-Member:** no secondary field; `assignment` is saved as SQL `NULL`

@@ -45,11 +45,21 @@
               <label for="position">المنصب <span aria-hidden="true">*</span></label>
               <select id="position" name="position" required>
                 <option value="" selected disabled>اختر المنصب</option>
-                <option value="Member">Member</option>
-                <option value="Board">Board</option>
+                <option value="EX-High Board">EX-High Board</option>
+                <option value="EX-Board">EX-Board</option>
                 <option value="High Board">High Board</option>
+                <option value="Board">Board</option>
+                <option value="Member">Member</option>
+                <option value="Non-Member">Non-Member</option>
               </select>
               <small class="error-message" id="positionError"></small>
+            </div>
+            <div class="field conditional-field" id="seasonField" hidden>
+              <label for="season">الموسم / الفترة <span aria-hidden="true">*</span></label>
+              <select id="season" name="season">
+                <option value="" selected disabled>اختر الموسم</option>
+              </select>
+              <small class="error-message" id="seasonError"></small>
             </div>
             <div class="field conditional-field" id="committeeField" hidden>
               <label for="committee">اللجنة <span aria-hidden="true">*</span></label>
