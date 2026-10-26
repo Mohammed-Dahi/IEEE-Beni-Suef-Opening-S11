@@ -2,7 +2,7 @@
 const SUPABASE_URL = "https://zwqzijcpfvvyyecjyuuh.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp3cXppamNwZnZ2eXllY2p5dXVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI5NTE1NjUsImV4cCI6MjEwODUyNzU2NX0.nduBuJ_304_KMDugAod5ZKGs7QBk8xIeULMY2iScd20";
 
-const committees = ["Event Management", "Entrepreneurship", "AI", "Back-End", "Data Analysis", "Embedded Systems", "Flutter", "Front-End", "Machine Learning", "Cyber Security", "Networks", "Red Team", "UI/UX", "Presentation", "HR", "Visuals", "Media", "Research", "Aerospace", "PR", "Marketing"];
+const committees = ["Event Management","Machnical Design", "Entrepreneurship", "AI", "Back-End", "Data Analysis", "Embedded Systems", "Flutter", "Front-End", "Machine Learning", "Cyber Security", "Networks", "Red Team", "UI/UX", "Presentation", "HR", "Visuals", "Media", "Research", "Aerospace", "PR", "Marketing"];
 const seasons = ["Season 10", "Season 9", "Season 8"];
 const branches = ["WIE", "SIGHT", "CS", "AESS", "Branch"];
 const form = document.querySelector("#registrationForm");
